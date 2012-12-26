@@ -1,4 +1,4 @@
 d-splatkin
 ==========
 
-A music project using Overtone.
+An electronic music project using Overtone.
