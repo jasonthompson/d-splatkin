@@ -7,28 +7,24 @@
 
 (def m (metronome (* 100 2)))
 
-(defsynth beep [note 60 vel 0.4]
+(definst beep [note 60]
   (let [freq (midicps note)
         src  (sin-osc freq)
         vib  (sin-osc (* freq 0.99))
         src  (/ (+ src vib) 2)
-        env  (env-gen (perc 0.01 1 1 -4) 1 1 0 1 :action FREE)
-        out1 (comb-l (* src env) 0.25 0.5 2)]
-    (out 0 (* 0.5 [(* vel src env) (* vel out1)]))))
+        env  (env-gen (perc 0.001 1 1 -4) 1 1 0 1 :action FREE)]
+    (* src env)))
 
-(defsynth bass-beep [note 60 vel 0.8]
+(definst bass-beep [note 60 vel 0.8]
   (let [freq (midicps note)
-        src  (sin-osc freq)
+        src  (saw freq)
         vib  (sin-osc (* freq 0.99))
         src  (/ (+ src vib) 2)
-        env  (env-gen (perc 0.1 1 1 -4) 1 1 0 1 :action FREE)]
-    (out 0 (* [0.5 0.5] (* vel src env)))))
+        env  (env-gen (perc 0.001 0.5 1 -4) :action FREE)]
+    (* vel src env)))
+(stop)
 
-
-
-
-
-
+(bass-beep)
 
 (definst string [note 60 amp 1.0 dur 0.5 decay 30 coef 0.3 gate 1]
   (let [freq (midicps note)
@@ -50,9 +46,9 @@
 
 (defn ice [beat]
   (let [next-phrase (+ beat 4)]
-    (at (m beat) (beep 89))
-    (at (m (+ beat 1)) (beep 92))
-    (at (m (+ beat 1.5)) (beep 90))
+    (at (m beat) (beep 101))
+    (at (m (+ beat 1)) (beep 104))
+    (at (m (+ beat 2)) (beep 102))
 
     (apply-at (m next-phrase) #'ice [next-phrase])))
 
@@ -63,18 +59,18 @@
     (at (m (+ beat 1)) (bass-beep 41))
     (at (m (+ beat 2)) (bass-beep 41))
     (at (m (+ beat 3)) (bass-beep 41))
-    (at (m (+ beat 4)) (bass-beep 41))
-    (at (m (+ beat 5)) (bass-beep 41))
+    (at (m (+ beat 3.25)) (bass-beep 41))
+
     (at (m (+ beat 6)) (bass-beep 41))
-    (at (m (+ beat 7)) (bass-beep 41))
+    (at (m (+ beat 6.5)) (bass-beep 41))
     (at (m (+ beat 8)) (bass-beep 42))
     (at (m (+ beat 9)) (bass-beep 42))
     (at (m (+ beat 10)) (bass-beep 42))
     (at (m (+ beat 11)) (bass-beep 42))
     (at (m (+ beat 12)) (bass-beep 44))
-    (at (m (+ beat 13)) (bass-beep 44))
+
     (at (m (+ beat 14)) (bass-beep 44))
-    (at (m (+ beat 15)) (bass-beep 44))
+
 
     (apply-at (m next-phrase) #'bassline [next-phrase])))
 
@@ -102,12 +98,33 @@
   (drums (m))
   (bassline (m))
   (ice (m)))
-
+(stop)
 (inst-pan! closed-hat2 0.50)
 (inst-pan! snare -0.25)
 (inst-volume! snare 1)
-(inst-volume! closed-hat2 0.9)
+(inst-volume! closed-hat2 1)
+(inst-volume! bass-beep 1)
+(inst-volume! beep 0.1)
+(inst-volume! overpad 0.2)
 (def closed-hat-reverb (inst-fx! closed-hat2 fx-freeverb))
+(def bass-fx (inst-fx! bass-beep fx-chorus))
+(def bass-echo (inst-fx! bass-beep fx-echo))
+(def ice-verb (inst-fx! beep fx-freeverb))
+(def ice-echo (inst-fx! beep fx-echo))
+(def overpad-chorus (inst-fx! overpad fx-chorus))
 
+(clear-fx bass-beep)
 (ctl closed-hat-reverb :wet-dry 0.40 :room-size 0.33 :dampening 0.2)
+(ctl bass-echo :max-delay 0.5 :delay-time (/ 15000 100))
+(ctl ice-echo :max-delay 1 :delay-time (/ 15000 100))
+(ctl ice-verb :wet-dry 0.75 :room-size 0.5 :dampening 0.8)
 (stop)
+(volume 0.8)
+
+;; 1/16 = 15,000 / # of bpm.
+;; 3/16 = 45,000 / # of bpm <--- Edge’s favorite setting!
+;;   (Testing with the example above: 45,000 / 100 bpm = 450ms which matches the above calculation).
+;; 1/4 = 60,000 / # of bpm. (Edge rarely uses this)
+;; These settings have only been used on one or two songs each:
+;; 1/3 of a quarter note triplet (= 1/6) = 40,000 / # of bpm (‘Bullet’, ‘All I Want Is You’ solo) <- this delay time sounds ‘tense’ and unsettling.
+;; 3/32 (‘Crumbs from your table’) = 22,500 / bpm (or half of 3/16).
