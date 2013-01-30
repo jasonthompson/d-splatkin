@@ -17,6 +17,7 @@
         snd (* amp env snd)]
     snd))
 
+;; Bells
 ;;http://computermusicresource.com/Simple.bell.tutorial.html
 (def dull-partials
   [
