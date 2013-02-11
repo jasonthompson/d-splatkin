@@ -8,13 +8,16 @@
   (let [notes   [note (* note note-multiplier)]
         trig    (impulse:kr trig-rate)
         freq    (midicps (lag (demand trig 0 (dxrand notes INF)) 0.25))
-        swr     (demand trig 0 (dseq [1 2 1] INF))
+        swr     (demand trig 0 (dseq [1 0.25] INF))
         sweep   (lin-exp (lf-tri swr) -1 1 40 3000)
         src     (pulse [freq (* freq pulse-width)] pulse-width)
         src     (lpf src sweep)]
     (* amp src)))
 
-(s101 40 0.2)
+(s101 :note 40 :amp 0.2 :note-multiplier 1.01 :bpm 100)
+(clear-fx s101)
+(ctl s101 :pulse-width 1.4 :bpm 100)
+
 (stop)
 ;; Mix
 
@@ -28,11 +31,14 @@
 (def s101-dist (inst-fx! s101 fx-distortion2))
 (ctl s101-dist :amount 0.75)
 (def s101-chorus (inst-fx! s101 fx-chorus))
-(ctl s101-chorus :rate 0.75 :depth 0.75)
+(ctl s101-chorus :rate 0.025 :depth 0.75)
+(def s101-verb (inst-fx! s101 fx-freeverb))
+(ctl s101-verb :wet-dry 0.75 :room-size 0.8)
+
 (volume 2)
 
 ;; Sequencer
-(def metro (metronome 128))
+(def metro (metronome 100))
 
 (defn make-bar []
   (def bar {0 [drops]
@@ -83,11 +89,10 @@
     (rhythm-player beat bar)
     (apply-at (m (inc beat))  #'run-rhythm [m])))
 
+(dorun
+ (run-rhythm metro))
 
-(run-rhythm metro)
-(player (metro))
 (stop)
-
 
 
 
