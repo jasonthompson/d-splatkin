@@ -1,5 +1,7 @@
-(ns d-splatkin.50-lights-down
-  (:use [overtone.live]))
+(ns d-splatkin.songs.50-lights-down
+  (:use d-splatkin.instruments
+        overtone.music.pitch
+        overtone.music.tuning))
 
 (definst bass [note 28]
   (let [freq (midicps note)
@@ -27,6 +29,8 @@
 (find-note-name (d-string 5))
 (find-note-name (d-string 4))
 
+(scale :e1 :minor)
+
 (def m (metronome 100))
 (bass (d-string 2))
 
@@ -35,5 +39,5 @@ a-string 0 3 3 3 3 3 3
 d-string 5 5 5 4 3
 a-string 2 2 2 2 2 2 2 2
 
-
+()
 (player m)

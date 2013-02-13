@@ -1,22 +1,34 @@
 (ns d-splatkin.songs.fus
-  (:use [overtone.live]
-        [overtone.inst.drum]
-        [d-splatkin.instruments]))
+  (:use overtone.live
+        d-splatkin.instruments))
 
 
-(definst s101 [note 60 amp 0.33 bpm 120 note-multiplier 1.1 trig-rate 3 pulse-width 0.8]
+(definst s101 [note 60 amp 0.33 bpm 120 note-multiplier 4 trig-rate 3 pulse-width 0.8]
   (let [notes   [note (* note note-multiplier)]
         trig    (impulse:kr trig-rate)
         freq    (midicps (lag (demand trig 0 (dxrand notes INF)) 0.25))
-        swr     (demand trig 0 (dseq [1 0.25] INF))
-        sweep   (lin-exp (lf-tri swr) -1 1 40 3000)
+        swr     (demand trig 0 (dseq 1 INF))
+        sweep   (lin-exp (lf-tri swr) -1 1 note (* note 100))
         src     (pulse [freq (* freq pulse-width)] pulse-width)
         src     (lpf src sweep)]
     (* amp src)))
 
-(s101 :note 40 :amp 0.2 :note-multiplier 1.01 :bpm 100)
+(definst s102 [note 60 amp 0.33 bpm 120 pulse-width 0.8]
+  (let [freq   (midicps note)
+        trig   (impulse:kr 2)
+        swr    (demand trig 0 (dseq [1 3 2 3] INF))
+        sweep  (lin-exp (lf-saw swr) -1 1 note (* note 5))
+        src    (square sweep)
+        src    (lpf src (* freq 50))]
+    (* amp src)))
+
+
+(s102 40)
+(s101 :note 38 :amp 0.3 :note-multiplier 4 :bpm 100 :trig-rate 0.25 )
+(stop)
+
 (clear-fx s101)
-(ctl s101 :pulse-width 1.4 :bpm 100)
+
 
 (stop)
 ;; Mix
