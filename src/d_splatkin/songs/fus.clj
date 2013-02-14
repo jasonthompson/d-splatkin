@@ -13,20 +13,29 @@
         src     (lpf src sweep)]
     (* amp src)))
 
-(definst s102 [note 60 amp 0.33 bpm 120 pulse-width 0.8]
+
+(definst s102 [note 60 amp 0.33 bpm 100 pulse-width 0]
   (let [freq   (midicps note)
         trig   (impulse:kr 2)
         swr    (demand trig 0 (dseq [1 3 2 3] INF))
         sweep  (lin-exp (lf-saw swr) -1 1 note (* note 5))
-        src    (square sweep)
+        src    (pulse sweep pulse-width)
         src    (lpf src (* freq 50))]
     (* amp src)))
 
 
-(s102 40)
+(s102 :note 40 :pulse-width 0.1)
 (s101 :note 38 :amp 0.3 :note-multiplier 4 :bpm 100 :trig-rate 0.25 )
 (stop)
 
+(definst simple-pad [note 50]
+  (let [freq   (midicps note)
+        mod    (lf-tri (* freq 1.25))
+        src    (sin-osc freq)]
+    (/ (+ src mod) 2)))
+
+(simple-pad)
+(stop)
 (clear-fx s101)
 
 
